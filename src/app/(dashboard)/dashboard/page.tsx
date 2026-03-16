@@ -1,36 +1,46 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(amount);
-}
+export const dynamic = "force-dynamic";
 
 async function getDashboardStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  const [totalPatients, todayAppointments, activeEnrollments, monthRevenue] =
-    await Promise.all([
-      db.patient.count(),
-      db.appointment.count({
-        where: { scheduledAt: { gte: today, lt: tomorrow } },
-      }),
-      db.programEnrollment.count({ where: { status: "ACTIVE" } }),
-      db.invoice.aggregate({
-        where: { status: "PAID", paidAt: { gte: monthStart } },
-        _sum: { finalAmount: true },
-      }),
-    ]);
+  const [
+    totalPatients,
+    todayAppointments,
+    activeEnrollments,
+    monthRevenue,
+    lowStockMedicines,
+  ] = await Promise.all([
+    db.patient.count(),
+    db.appointment.count({
+      where: { scheduledAt: { gte: today, lt: tomorrow } },
+    }),
+    db.programEnrollment.count({ where: { status: "ACTIVE" } }),
+    db.invoice.aggregate({
+      where: {
+        status: "PAID",
+        paidAt: {
+          gte: new Date(today.getFullYear(), today.getMonth(), 1),
+        },
+      },
+      _sum: { finalAmount: true },
+    }),
+    db.$queryRaw<{count: bigint}[]>`SELECT COUNT(*) as count FROM "medicines" WHERE "stockQty" <= "minStockQty" AND "isActive" = true`.then(r => Number(r[0]?.count ?? 0)).catch(() => 0),
+  ]);
 
   return {
     totalPatients,
     todayAppointments,
     activeEnrollments,
     monthRevenue: Number(monthRevenue._sum.finalAmount ?? 0),
+    lowStockMedicines,
   };
 }
 
@@ -49,12 +59,12 @@ async function getRecentAppointments() {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-800 border border-amber-200",
-  CONFIRMED: "bg-blue-100 text-blue-800 border border-blue-200",
-  IN_PROGRESS: "bg-violet-100 text-violet-800 border border-violet-200",
-  COMPLETED: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  CANCELLED: "bg-red-100 text-red-700 border border-red-200",
-  NO_SHOW: "bg-slate-100 text-slate-600 border border-slate-200",
+  PENDING: "bg-yellow-100 text-yellow-700",
+  CONFIRMED: "bg-blue-100 text-blue-700",
+  IN_PROGRESS: "bg-purple-100 text-purple-700",
+  COMPLETED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
+  NO_SHOW: "bg-gray-100 text-gray-700",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -79,93 +89,114 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          {greeting}, {session?.user.name}! 👋
+        <h1 className="text-2xl font-bold text-gray-900">
+          {greeting}, {session?.user.name}!
         </h1>
-        <p className="text-slate-500 text-sm mt-1">
+        <p className="text-gray-500 text-sm mt-1">
           {new Date().toLocaleDateString("vi-VN", {
-            weekday: "long", day: "numeric", month: "long", year: "numeric",
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
           })}
         </p>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Tổng bệnh nhân" value={stats.totalPatients.toLocaleString("vi-VN")}
-          icon="👥" href="/patients"
-          bg="bg-blue-50" border="border-blue-200" text="text-blue-900" sub="text-blue-700" />
-        <StatCard label="Lịch hẹn hôm nay" value={stats.todayAppointments.toString()}
-          icon="📅" href="/appointments"
-          bg="bg-teal-50" border="border-teal-200" text="text-teal-900" sub="text-teal-700" />
-        <StatCard label="Gói 21 ngày đang chạy" value={stats.activeEnrollments.toString()}
-          icon="🌿" href="/programs"
-          bg="bg-emerald-50" border="border-emerald-200" text="text-emerald-900" sub="text-emerald-700" />
-        <StatCard label="Doanh thu tháng này" value={formatCurrency(stats.monthRevenue)}
-          icon="💰" href="/reports"
-          bg="bg-amber-50" border="border-amber-200" text="text-amber-900" sub="text-amber-700" />
+        <StatCard
+          label="Tổng bệnh nhân"
+          value={stats.totalPatients.toLocaleString("vi-VN")}
+          icon="👥"
+          href="/patients"
+          color="bg-blue-50 border-blue-100"
+        />
+        <StatCard
+          label="Lịch hẹn hôm nay"
+          value={stats.todayAppointments.toString()}
+          icon="📅"
+          href="/appointments"
+          color="bg-teal-50 border-teal-100"
+        />
+        <StatCard
+          label="Gói 21 ngày đang chạy"
+          value={stats.activeEnrollments.toString()}
+          icon="🌿"
+          href="/programs"
+          color="bg-green-50 border-green-100"
+        />
+        <StatCard
+          label="Doanh thu tháng này"
+          value={formatCurrency(stats.monthRevenue)}
+          icon="💰"
+          href="/reports"
+          color="bg-amber-50 border-amber-100"
+        />
       </div>
 
       {/* Today's appointments */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h2 className="font-semibold text-slate-900">Lịch hẹn hôm nay</h2>
-          <Link href="/appointments" className="text-sm text-teal-600 hover:text-teal-700 font-medium">
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-900">Lịch hẹn hôm nay</h2>
+          <Link href="/appointments" className="text-sm text-teal-600 hover:underline">
             Xem tất cả →
           </Link>
         </div>
+
         {appointments.length === 0 ? (
-          <div className="px-6 py-12 text-center text-slate-400">
+          <div className="px-6 py-12 text-center text-gray-400">
             <p className="text-4xl mb-2">📅</p>
-            <p className="text-sm">Không có lịch hẹn nào hôm nay</p>
+            <p>Không có lịch hẹn nào hôm nay</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-gray-50">
             {appointments.map((apt) => (
-              <div key={apt.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-slate-50 transition-colors">
-                <div className="text-sm font-mono text-slate-500 w-14 shrink-0">
-                  {apt.scheduledAt.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+              <div key={apt.id} className="px-6 py-3.5 flex items-center gap-4 hover:bg-gray-50">
+                <div className="text-sm font-mono text-gray-500 w-14">
+                  {apt.scheduledAt.toLocaleTimeString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-800 text-sm truncate">{apt.patient.fullName}</p>
-                  <p className="text-xs text-slate-400">{apt.doctor.name}</p>
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900 text-sm">{apt.patient.fullName}</p>
+                  <p className="text-xs text-gray-400">{apt.doctor.name} · {apt.type ?? "Khám bệnh"}</p>
                 </div>
-                <span className={`text-xs px-2.5 py-1 rounded-full font-semibold shrink-0 ${STATUS_COLORS[apt.status] ?? "bg-slate-100 text-slate-600"}`}>
-                  {STATUS_LABELS[apt.status] ?? apt.status}
+                <span
+                  className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLORS[apt.status]}`}
+                >
+                  {STATUS_LABELS[apt.status]}
                 </span>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {/* Quick links */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { href: "/patients/new", label: "Thêm bệnh nhân", icon: "👤", color: "hover:border-blue-300 hover:bg-blue-50" },
-          { href: "/appointments/new", label: "Đặt lịch hẹn", icon: "📅", color: "hover:border-teal-300 hover:bg-teal-50" },
-          { href: "/prescriptions/new", label: "Kê đơn thuốc", icon: "💊", color: "hover:border-violet-300 hover:bg-violet-50" },
-          { href: "/billing/new", label: "Tạo hóa đơn", icon: "🧾", color: "hover:border-amber-300 hover:bg-amber-50" },
-        ].map((item) => (
-          <Link key={item.href} href={item.href}
-            className={`bg-white border border-slate-200 rounded-xl p-4 text-center transition-all duration-150 shadow-sm ${item.color}`}>
-            <div className="text-2xl mb-1.5">{item.icon}</div>
-            <p className="text-sm font-semibold text-slate-700">{item.label}</p>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
 
-function StatCard({ label, value, icon, href, bg, border, text, sub }: {
-  label: string; value: string; icon: string; href: string;
-  bg: string; border: string; text: string; sub: string;
+function StatCard({
+  label,
+  value,
+  icon,
+  href,
+  color,
+}: {
+  label: string;
+  value: string;
+  icon: string;
+  href: string;
+  color: string;
 }) {
   return (
-    <Link href={href} className={`block rounded-xl border-2 p-5 hover:shadow-md transition-all duration-150 ${bg} ${border}`}>
-      <div className="text-2xl mb-3">{icon}</div>
-      <p className={`text-2xl font-bold ${text}`}>{value}</p>
-      <p className={`text-xs font-medium mt-1.5 ${sub}`}>{label}</p>
+    <Link
+      href={href}
+      className={`block rounded-xl border p-5 hover:shadow-md transition-shadow ${color}`}
+    >
+      <div className="text-2xl mb-2">{icon}</div>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-sm text-gray-600 mt-1">{label}</p>
     </Link>
   );
 }
