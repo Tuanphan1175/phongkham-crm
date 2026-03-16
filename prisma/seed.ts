@@ -25,13 +25,25 @@ async function main() {
 
   const doctor = await prisma.user.upsert({
     where: { email: "bacsi@phongkham.vn" },
-    update: {},
+    update: { name: "Phan Anh Tuấn" },
     create: {
       email: "bacsi@phongkham.vn",
       password: doctorPassword,
-      name: "Nguyễn Văn Minh",
+      name: "Phan Anh Tuấn",
       role: "DOCTOR",
       phone: "0901234567",
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: "bacsi2@phongkham.vn" },
+    update: {},
+    create: {
+      email: "bacsi2@phongkham.vn",
+      password: await hash("doctor123", 10),
+      name: "Trần Thị Thanh Vy",
+      role: "DOCTOR",
+      phone: "0907654321",
     },
   });
 
