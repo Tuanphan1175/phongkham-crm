@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface Patient { id: string; code: string; fullName: string; phone?: string; }
 interface Service { id: string; code: string; name: string; price: number; category: string; }
@@ -13,6 +13,10 @@ function formatCurrency(amount: number) {
 
 export default function NewBillingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prescriptionId = searchParams.get("prescriptionId");
+  const patientIdParam = searchParams.get("patientId");
+
   const [patients, setPatients] = useState<Patient[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [patientSearch, setPatientSearch] = useState("");
@@ -24,10 +28,43 @@ export default function NewBillingPage() {
   const [discountAmount, setDiscountAmount] = useState(0);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [prescriptionNote, setPrescriptionNote] = useState("");
 
   useEffect(() => {
     fetch("/api/services").then(r => r.json()).then(setServices).catch(() => {});
   }, []);
+
+  // Load prescription items if prescriptionId provided
+  useEffect(() => {
+    if (!prescriptionId) return;
+    fetch(`/api/prescriptions/${prescriptionId}`)
+      .then(r => r.json())
+      .then(rx => {
+        if (!rx?.id) return;
+        // Pre-select patient
+        if (rx.patient) setSelectedPatient(rx.patient);
+        // Pre-populate items from prescription medicines
+        const rxItems: InvoiceItem[] = rx.items
+          .filter((it: { medicine: { sellPrice?: number } }) => (it.medicine?.sellPrice ?? 0) > 0)
+          .map((it: { medicine: { name: string; sellPrice: number; unit: string }; quantity: number }) => ({
+            description: it.medicine.name,
+            quantity: it.quantity,
+            unitPrice: it.medicine.sellPrice,
+          }));
+        if (rxItems.length > 0) setItems(rxItems);
+        setPrescriptionNote(`Đơn thuốc #${rx.id.slice(-8).toUpperCase()} – ${rx.patient?.fullName ?? ""}`);
+      })
+      .catch(() => {});
+  }, [prescriptionId]);
+
+  // Load patient if patientId provided (without prescription)
+  useEffect(() => {
+    if (!patientIdParam || prescriptionId) return;
+    fetch(`/api/patients/${patientIdParam}`)
+      .then(r => r.json())
+      .then(p => { if (p?.id) setSelectedPatient(p); })
+      .catch(() => {});
+  }, [patientIdParam, prescriptionId]);
 
   useEffect(() => {
     if (!patientSearch.trim()) { setPatients([]); return; }
@@ -105,6 +142,13 @@ export default function NewBillingPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Prescription source banner */}
+        {prescriptionNote && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center gap-2 text-sm text-amber-800">
+            💊 Tạo từ <strong>{prescriptionNote}</strong> — giá thuốc đã được điền sẵn
+          </div>
+        )}
+
         {/* Patient */}
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="font-semibold text-gray-900 mb-4">Bệnh nhân</h2>
