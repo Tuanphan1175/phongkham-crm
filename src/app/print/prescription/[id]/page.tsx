@@ -7,9 +7,10 @@ function fmtDate(d: Date | string) {
   return dt.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export default async function PrintPrescriptionPage({ params }: { params: { id: string } }) {
+export default async function PrintPrescriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const rx = await db.prescription.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: true,
       doctor: { select: { name: true, phone: true } },

@@ -21,13 +21,14 @@ const metricSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { enrollmentId: string } }
+  { params }: { params: Promise<{ enrollmentId: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { enrollmentId } = await params;
   const metrics = await db.healthMetric.findMany({
-    where: { enrollmentId: params.enrollmentId },
+    where: { enrollmentId },
     orderBy: { weekNumber: "asc" },
   });
 
@@ -36,18 +37,19 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { enrollmentId: string } }
+  { params }: { params: Promise<{ enrollmentId: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { enrollmentId } = await params;
   const body = await req.json();
   const parsed = metricSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
   const metric = await db.healthMetric.create({
     data: {
-      enrollmentId: params.enrollmentId,
+      enrollmentId,
       ...parsed.data,
     },
   });

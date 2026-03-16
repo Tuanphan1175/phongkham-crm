@@ -4,13 +4,14 @@ import { db } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const invoice = await db.invoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: true,
       items: { include: { service: true } },
@@ -24,15 +25,16 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const body = await req.json();
   const { paidAmount, paymentMethod, status } = body;
 
-  const invoice = await db.invoice.findUnique({ where: { id: params.id } });
+  const invoice = await db.invoice.findUnique({ where: { id } });
   if (!invoice) return NextResponse.json({ error: "Không tìm thấy" }, { status: 404 });
 
   const newPaidAmount = paidAmount ?? Number(invoice.paidAmount);
@@ -46,7 +48,7 @@ export async function PATCH(
   }
 
   const updated = await db.invoice.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       paidAmount: newPaidAmount,
       paymentMethod,

@@ -22,10 +22,11 @@ const STATUS_LABELS: Record<string, string> = {
 export default async function PrescriptionDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const prescription = await db.prescription.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: {
         select: { id: true, fullName: true, code: true, phone: true, dateOfBirth: true, gender: true },

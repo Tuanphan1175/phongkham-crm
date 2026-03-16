@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -13,11 +13,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
+  const { id } = await params;
   const body = await req.json();
   const { name, genericName, sellPrice, costPrice, unit, dosageForm, minStockQty, isActive } = body;
 
   const medicine = await db.medicine.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...(name !== undefined && { name }),
       ...(genericName !== undefined && { genericName }),
@@ -35,7 +36,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,8 +45,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
+  const { id } = await params;
   await db.medicine.update({
-    where: { id: params.id },
+    where: { id },
     data: { isActive: false },
   });
 

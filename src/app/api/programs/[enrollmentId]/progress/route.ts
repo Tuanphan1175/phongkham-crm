@@ -16,13 +16,14 @@ const createProgressSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { enrollmentId: string } }
+  { params }: { params: Promise<{ enrollmentId: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { enrollmentId } = await params;
   const progress = await db.weeklyProgress.findMany({
-    where: { enrollmentId: params.enrollmentId },
+    where: { enrollmentId },
     orderBy: { weekNumber: "asc" },
   });
 
@@ -31,11 +32,12 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { enrollmentId: string } }
+  { params }: { params: Promise<{ enrollmentId: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { enrollmentId } = await params;
   const body = await req.json();
   const parsed = createProgressSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -55,12 +57,12 @@ export async function POST(
   const progress = await db.weeklyProgress.upsert({
     where: {
       enrollmentId_weekNumber: {
-        enrollmentId: params.enrollmentId,
+        enrollmentId,
         weekNumber,
       },
     },
     create: {
-      enrollmentId: params.enrollmentId,
+      enrollmentId,
       ...data,
     },
     update: data,

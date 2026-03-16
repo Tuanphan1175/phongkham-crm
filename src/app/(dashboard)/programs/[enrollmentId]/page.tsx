@@ -8,10 +8,11 @@ import HealthMetricsSection from "./HealthMetricsSection";
 export default async function EnrollmentDetailPage({
   params,
 }: {
-  params: { enrollmentId: string };
+  params: Promise<{ enrollmentId: string }>;
 }) {
+  const { enrollmentId } = await params;
   const enrollment = await db.programEnrollment.findUnique({
-    where: { id: params.enrollmentId },
+    where: { id: enrollmentId },
     include: {
       patient: true,
       program: { include: { weekTemplates: { orderBy: { weekNumber: "asc" } } } },

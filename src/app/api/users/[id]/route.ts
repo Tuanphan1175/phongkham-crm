@@ -15,13 +15,14 @@ const updateSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const { id } = await params;
   const body = await req.json();
   const parsed = updateSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -31,7 +32,7 @@ export async function PATCH(
   if (password) data.password = await hash(password, 12);
 
   const user = await db.user.update({
-    where: { id: params.id },
+    where: { id },
     data,
     select: {
       id: true, name: true, email: true, role: true,
@@ -44,20 +45,21 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session || session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const { id } = await params;
   // Prevent self-deletion
-  if (params.id === session.user.id) {
+  if (id === session.user.id) {
     return NextResponse.json({ error: "Không thể vô hiệu hóa tài khoản của chính mình" }, { status: 400 });
   }
 
   const user = await db.user.update({
-    where: { id: params.id },
+    where: { id },
     data: { isActive: false },
     select: { id: true, isActive: true },
   });

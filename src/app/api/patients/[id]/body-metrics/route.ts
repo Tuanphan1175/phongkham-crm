@@ -4,13 +4,14 @@ import { db } from "@/lib/db";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const metrics = await db.bodyMetric.findMany({
-    where: { patientId: params.id },
+    where: { patientId: id },
     orderBy: { recordedAt: "desc" },
   });
 
@@ -19,11 +20,12 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const body = await req.json();
   const {
     recordedAt, height, weight, bmi, bodyFatPct, muscleMass,
@@ -35,7 +37,7 @@ export async function POST(
 
   const metric = await db.bodyMetric.create({
     data: {
-      patientId: params.id,
+      patientId: id,
       recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
       height: num(height),
       weight: num(weight),

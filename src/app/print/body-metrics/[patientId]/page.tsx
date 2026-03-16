@@ -32,15 +32,16 @@ const METRICS = [
   { key: "heartRate",    label: "Nhịp tim",           unit: "bpm",  ref: "60–100" },
 ];
 
-export default async function PrintBodyMetricsPage({ params }: { params: { patientId: string } }) {
+export default async function PrintBodyMetricsPage({ params }: { params: Promise<{ patientId: string }> }) {
+  const { patientId } = await params;
   const patient = await db.patient.findUnique({
-    where: { id: params.patientId },
+    where: { id: patientId },
     select: { id: true, fullName: true, code: true, gender: true, dateOfBirth: true, phone: true },
   });
   if (!patient) notFound();
 
   const metrics = await db.bodyMetric.findMany({
-    where: { patientId: params.patientId },
+    where: { patientId },
     orderBy: { recordedAt: "asc" },
   });
 

@@ -34,10 +34,11 @@ const STATUS_ICONS: Record<string, string> = {
 export default async function AppointmentDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const apt = await db.appointment.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: {
         select: {

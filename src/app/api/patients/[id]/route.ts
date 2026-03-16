@@ -17,13 +17,14 @@ const updatePatientSchema = z.object({
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const patient = await db.patient.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       appointments: {
         include: { doctor: true },
@@ -56,11 +57,12 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { id } = await params;
   const body = await req.json();
   const parsed = updatePatientSchema.safeParse(body);
 
@@ -69,7 +71,7 @@ export async function PATCH(
   }
 
   const patient = await db.patient.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       ...parsed.data,
       dateOfBirth: parsed.data.dateOfBirth ? new Date(parsed.data.dateOfBirth) : undefined,
@@ -82,7 +84,7 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -91,6 +93,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
-  await db.patient.delete({ where: { id: params.id } });
+  const { id } = await params;
+  await db.patient.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

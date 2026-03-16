@@ -27,9 +27,10 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "ĐÃ HỦY",
 };
 
-export default async function PrintInvoicePage({ params }: { params: { id: string } }) {
+export default async function PrintInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const inv = await db.invoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       patient: true,
       items: { include: { service: true } },

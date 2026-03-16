@@ -6,10 +6,11 @@ import Link from "next/link";
 export default async function PatientDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const patient = await db.patient.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       appointments: {
         include: { doctor: true },
