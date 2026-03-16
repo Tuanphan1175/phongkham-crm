@@ -28,6 +28,8 @@ export default function MedicinesPage() {
   const [showLowStock, setShowLowStock] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", genericName: "", sellPrice: "", costPrice: "" });
   const [form, setForm] = useState({
     code: "", name: "", genericName: "", unit: "Viên",
     dosageForm: "", stockQty: 0, minStockQty: 10,
@@ -71,6 +73,23 @@ export default function MedicinesPage() {
     } else {
       alert("Lỗi khi thêm thuốc!");
     }
+    setSaving(false);
+  }
+
+  function startEdit(med: Medicine) {
+    setEditingId(med.id);
+    setEditForm({ name: med.name, genericName: med.genericName ?? "", sellPrice: String(med.sellPrice), costPrice: String(med.costPrice) });
+  }
+
+  async function saveEdit(id: string) {
+    setSaving(true);
+    await fetch(`/api/medicines/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...editForm, sellPrice: Number(editForm.sellPrice), costPrice: Number(editForm.costPrice) }),
+    });
+    setEditingId(null);
+    fetchMedicines();
     setSaving(false);
   }
 
@@ -145,14 +164,15 @@ export default function MedicinesPage() {
               <th className="text-right text-xs font-medium text-gray-500 px-4 py-3">Tồn kho</th>
               <th className="text-right text-xs font-medium text-gray-500 px-4 py-3">Giá bán</th>
               <th className="text-center text-xs font-medium text-gray-500 px-4 py-3">Trạng thái</th>
+              <th className="px-4 py-3 w-24" />
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-12 text-center text-gray-400">Đang tải...</td></tr>
+              <tr><td colSpan={7} className="px-4 py-12 text-center text-gray-400">Đang tải...</td></tr>
             ) : medicines.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center text-gray-400">
+                <td colSpan={7} className="px-4 py-12 text-center text-gray-400">
                   <p className="text-3xl mb-2">💊</p>
                   <p>Không tìm thấy thuốc nào</p>
                 </td>
@@ -160,12 +180,30 @@ export default function MedicinesPage() {
             ) : (
               medicines.map((med) => {
                 const isLow = med.stockQty <= med.minStockQty;
+                const isEditing = editingId === med.id;
                 return (
                   <tr key={med.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <p className="text-xs text-gray-400 font-mono">{med.code}</p>
-                      <p className="font-medium text-gray-900 text-sm">{med.name}</p>
-                      {med.genericName && <p className="text-xs text-gray-500 italic">{med.genericName}</p>}
+                      {isEditing ? (
+                        <input
+                          value={editForm.name}
+                          onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                          className="w-full border border-gray-300 rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 mt-0.5"
+                        />
+                      ) : (
+                        <p className="font-medium text-gray-900 text-sm">{med.name}</p>
+                      )}
+                      {isEditing ? (
+                        <input
+                          value={editForm.genericName}
+                          onChange={e => setEditForm(f => ({ ...f, genericName: e.target.value }))}
+                          placeholder="Tên hoạt chất..."
+                          className="w-full border border-gray-200 rounded-lg px-2 py-1 text-xs mt-1 focus:outline-none focus:ring-1 focus:ring-teal-400 text-gray-500"
+                        />
+                      ) : (
+                        med.genericName && <p className="text-xs text-gray-500 italic">{med.genericName}</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{med.dosageForm ?? "—"}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{med.unit}</td>
@@ -175,8 +213,17 @@ export default function MedicinesPage() {
                       </span>
                       {isLow && <p className="text-xs text-red-500">⚠️ Sắp hết</p>}
                     </td>
-                    <td className="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                      {formatCurrency(med.sellPrice)}
+                    <td className="px-4 py-3 text-right">
+                      {isEditing ? (
+                        <input
+                          type="number" min="0"
+                          value={editForm.sellPrice}
+                          onChange={e => setEditForm(f => ({ ...f, sellPrice: e.target.value }))}
+                          className="w-28 border border-gray-300 rounded-lg px-2 py-1 text-sm text-right focus:outline-none focus:ring-2 focus:ring-teal-500"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium text-gray-900">{formatCurrency(med.sellPrice)}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${
@@ -184,6 +231,25 @@ export default function MedicinesPage() {
                       }`}>
                         {med.isActive ? "Đang dùng" : "Ngừng"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {isEditing ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button onClick={() => saveEdit(med.id)} disabled={saving}
+                            className="px-2.5 py-1 bg-teal-600 text-white rounded-lg text-xs font-medium hover:bg-teal-700 disabled:opacity-50">
+                            Lưu
+                          </button>
+                          <button onClick={() => setEditingId(null)}
+                            className="px-2.5 py-1 border border-gray-300 text-gray-600 rounded-lg text-xs hover:bg-gray-50">
+                            Hủy
+                          </button>
+                        </div>
+                      ) : (
+                        <button onClick={() => startEdit(med)}
+                          className="text-sm text-teal-600 hover:text-teal-800 font-medium">
+                          Sửa
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
