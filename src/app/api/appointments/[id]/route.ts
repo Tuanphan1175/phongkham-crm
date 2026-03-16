@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const appointment = await db.appointment.findUnique({
+    where: { id: params.id },
+    include: {
+      patient: {
+        select: {
+          id: true, fullName: true, code: true, phone: true,
+          dateOfBirth: true, gender: true, insurance: true,
+        },
+      },
+      doctor: { select: { id: true, name: true, phone: true } },
+    },
+  });
+
+  if (!appointment) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(appointment);
+}
+
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -24,7 +48,7 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await auth();

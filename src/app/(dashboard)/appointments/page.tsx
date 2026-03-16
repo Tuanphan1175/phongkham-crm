@@ -126,10 +126,10 @@ export default async function AppointmentsPage({
                         {APPOINTMENT_STATUS_LABELS[apt.status]}
                       </span>
                       <Link
-                        href={`/patients/${apt.patientId}`}
+                        href={`/appointments/${apt.id}`}
                         className="text-xs text-teal-600 hover:underline"
                       >
-                        Hồ sơ
+                        Chi tiết
                       </Link>
                     </div>
                   ))}
