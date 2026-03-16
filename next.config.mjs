@@ -1,8 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    serverComponentsExternalPackages: ["bcryptjs", "bcrypt"],
-  },
+  serverExternalPackages: ["bcryptjs", "bcrypt"],
 };
 
 export default nextConfig;
