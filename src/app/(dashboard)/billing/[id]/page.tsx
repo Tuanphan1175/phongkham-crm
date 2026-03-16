@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 interface InvoiceItem {
@@ -64,7 +64,6 @@ function formatDate(d: string) {
 
 export default function BillingDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
