@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getDashboardStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -30,9 +32,7 @@ async function getDashboardStats() {
       },
       _sum: { finalAmount: true },
     }),
-    db.medicine.count({
-      where: { stockQty: { lte: db.medicine.fields.minStockQty } },
-    }).catch(() => 0),
+    db.$queryRaw<{count: bigint}[]>`SELECT COUNT(*) as count FROM "medicines" WHERE "stockQty" <= "minStockQty" AND "isActive" = true`.then(r => Number(r[0]?.count ?? 0)).catch(() => 0),
   ]);
 
   return {
