@@ -44,10 +44,10 @@ export default async function PrescriptionDetailPage({
   if (!prescription) notFound();
 
   const medicineTotal = prescription.items.reduce(
-    (sum, item) => sum + item.quantity * (item.medicine.sellPrice ?? 0),
+    (sum, item) => sum + item.quantity * Number(item.medicine.sellPrice ?? 0),
     0
   );
-  const hasPrice = prescription.items.some(it => (it.medicine.sellPrice ?? 0) > 0);
+  const hasPrice = prescription.items.some(it => Number(it.medicine.sellPrice ?? 0) > 0);
 
   const age = prescription.patient.dateOfBirth
     ? Math.floor((Date.now() - new Date(prescription.patient.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000))
@@ -127,7 +127,7 @@ export default async function PrescriptionDetailPage({
         </div>
         <div className="divide-y divide-gray-50">
           {prescription.items.map((item, idx) => {
-            const lineTotal = item.quantity * (item.medicine.sellPrice ?? 0);
+            const lineTotal = item.quantity * Number(item.medicine.sellPrice ?? 0);
             return (
               <div key={item.id} className="px-5 py-4 flex gap-4">
                 <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center text-teal-700 font-bold text-sm shrink-0 mt-0.5">
@@ -145,7 +145,7 @@ export default async function PrescriptionDetailPage({
                       <div className="text-right shrink-0">
                         <p className="text-sm font-semibold text-gray-900">{formatCurrency(lineTotal)}</p>
                         {item.medicine.sellPrice ? (
-                          <p className="text-xs text-gray-400">{item.quantity} × {formatCurrency(item.medicine.sellPrice)}</p>
+                          <p className="text-xs text-gray-400">{item.quantity} × {formatCurrency(Number(item.medicine.sellPrice))}</p>
                         ) : null}
                       </div>
                     )}
