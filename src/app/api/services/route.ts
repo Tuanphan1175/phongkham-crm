@@ -31,14 +31,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { code, name, category, price, unit, description } = body;
 
-  if (!code || !name || !price) {
+  if (!name || !price) {
     return NextResponse.json({ error: "Thiếu thông tin bắt buộc" }, { status: 400 });
   }
 
   const count = await db.service.count();
   const service = await db.service.create({
     data: {
-      code: code || `SVC${String(count + 1).padStart(4, "0")}`,
+      code: code || `SVC${String(count + 1).padStart(3, "0")}`,
       name,
       category: category || "Khám",
       price: Number(price),
