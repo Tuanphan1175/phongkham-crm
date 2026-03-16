@@ -85,7 +85,7 @@ export default function ServicesPage() {
   }
 
   const filtered = filterCategory === "ALL" ? services : services.filter(s => s.category === filterCategory);
-  const allCategories = [...new Set(services.map(s => s.category))];
+  const allCategories = Array.from(new Set(services.map(s => s.category)));
 
   return (
     <div className="space-y-5">
