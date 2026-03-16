@@ -216,7 +216,16 @@ export default function BodyMetricsPage() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">Bảng theo dõi tổng hợp</h2>
-            <span className="text-xs text-gray-400">{metrics.length} lần đo</span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400">{metrics.length} lần đo</span>
+              <a
+                href={`/print/body-metrics/${patientId}`}
+                target="_blank"
+                className="px-3 py-1.5 bg-gray-800 text-white rounded-lg text-xs font-medium hover:bg-gray-900"
+              >
+                🖨️ In bảng
+              </a>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

@@ -145,9 +145,18 @@ export default async function BillingPage({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/billing/${inv.id}`} className="text-sm text-teal-600 hover:underline">
-                      Chi tiết
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/billing/${inv.id}`} className="text-sm text-teal-600 hover:underline">
+                        Chi tiết
+                      </Link>
+                      <Link
+                        href={`/print/invoice/${inv.id}`}
+                        target="_blank"
+                        className="text-sm text-gray-500 hover:text-gray-800"
+                      >
+                        🖨️
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))

@@ -154,6 +154,13 @@ export default async function PrescriptionDetailPage({
       {/* Actions */}
       <div className="flex gap-3">
         <Link
+          href={`/print/prescription/${prescription.id}`}
+          target="_blank"
+          className="px-4 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900"
+        >
+          🖨️ In đơn thuốc
+        </Link>
+        <Link
           href={`/prescriptions/new?patientId=${prescription.patient.id}`}
           className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700"
         >
