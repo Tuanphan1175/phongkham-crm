@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, LineChart, Line, Legend,
+  ResponsiveContainer, LineChart, Line,
 } from "recharts";
 
 interface ReportData {
@@ -39,6 +39,7 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchReportData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period]);
 
   async function syncToSheets() {

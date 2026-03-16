@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 interface BodyMetric {
@@ -65,7 +65,6 @@ function formatDate(d: string) {
 
 export default function BodyMetricsPage() {
   const params = useParams();
-  const router = useRouter();
   const patientId = params.id as string;
 
   const [patient, setPatient] = useState<Patient | null>(null);

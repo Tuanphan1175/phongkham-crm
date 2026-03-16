@@ -118,7 +118,7 @@ export default function NewBillingPage() {
     });
 
     if (res.ok) {
-      const invoice = await res.json();
+      await res.json();
       router.push(`/billing`);
     } else {
       alert("Lỗi tạo hóa đơn!");
