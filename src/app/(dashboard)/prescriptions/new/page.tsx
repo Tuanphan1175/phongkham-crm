@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 interface Patient { id: string; fullName: string; code: string; phone: string | null }
 interface Doctor { id: string; name: string }
@@ -145,7 +146,7 @@ export default function NewPrescriptionPage() {
   return (
     <div className="max-w-3xl">
       <div className="mb-6">
-        <a href="/prescriptions" className="text-sm text-gray-400 hover:text-gray-600">← Danh sách đơn thuốc</a>
+        <Link href="/prescriptions" className="text-sm text-gray-400 hover:text-gray-600">← Danh sách đơn thuốc</Link>
         <h1 className="text-xl font-bold text-gray-900 mt-1">Kê đơn thuốc mới</h1>
       </div>
 

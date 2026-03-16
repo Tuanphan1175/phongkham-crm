@@ -1,10 +1,9 @@
 "use client";
 
 export default function DashboardError({
-  error,
   reset,
 }: {
-  error: Error & { digest?: string };
+  error?: Error & { digest?: string };
   reset: () => void;
 }) {
   return (
