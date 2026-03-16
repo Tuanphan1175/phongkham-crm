@@ -49,10 +49,11 @@ function getLatestMetric(metrics: Array<{ weekNumber: number; digestiveScore: nu
 export default async function ProgramsPage({
   searchParams,
 }: {
-  searchParams: { status?: string; page?: string };
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const status = searchParams.status ?? "ACTIVE";
-  const page = parseInt(searchParams.page ?? "1");
+  const { status: statusParam, page: pageParam } = await searchParams;
+  const status = statusParam ?? "ACTIVE";
+  const page = parseInt(pageParam ?? "1");
   const { enrollments, activeCount } = await getEnrollments(status, page);
 
   return (

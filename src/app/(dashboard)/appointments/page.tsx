@@ -34,10 +34,11 @@ async function getDoctors() {
 export default async function AppointmentsPage({
   searchParams,
 }: {
-  searchParams: { date?: string };
+  searchParams: Promise<{ date?: string }>;
 }) {
   const today = new Date().toISOString().split("T")[0];
-  const selectedDate = searchParams.date ?? today;
+  const { date } = await searchParams;
+  const selectedDate = date ?? today;
 
   const [appointments] = await Promise.all([
     getAppointments(selectedDate),

@@ -35,9 +35,10 @@ const STATUS_LABELS: Record<string, string> = {
 export default async function PrescriptionsPage({
   searchParams,
 }: {
-  searchParams: { page?: string };
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const page = parseInt(searchParams.page ?? "1");
+  const { page: pageParam } = await searchParams;
+  const page = parseInt(pageParam ?? "1");
   const { prescriptions, total } = await getPrescriptions(page);
 
   return (

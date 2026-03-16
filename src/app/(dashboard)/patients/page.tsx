@@ -32,10 +32,11 @@ async function getPatients(search: string, page: number) {
 export default async function PatientsPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 }) {
-  const search = searchParams.search ?? "";
-  const page = parseInt(searchParams.page ?? "1");
+  const { search: searchParam, page: pageParam } = await searchParams;
+  const search = searchParam ?? "";
+  const page = parseInt(pageParam ?? "1");
   const { patients, total, pages } = await getPatients(search, page);
 
   return (

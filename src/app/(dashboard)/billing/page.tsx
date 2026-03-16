@@ -47,10 +47,11 @@ async function getSummary() {
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: { status?: string; page?: string };
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const status = searchParams.status ?? "ALL";
-  const page = parseInt(searchParams.page ?? "1");
+  const { status: statusParam, page: pageParam } = await searchParams;
+  const status = statusParam ?? "ALL";
+  const page = parseInt(pageParam ?? "1");
   const [{ invoices, total }, summary] = await Promise.all([
     getInvoices(status, page),
     getSummary(),
