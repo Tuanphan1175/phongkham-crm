@@ -16,7 +16,7 @@ export async function GET(
       doctor: { select: { name: true } },
       items: {
         include: {
-          medicine: { select: { name: true, unit: true, concentration: true, dosageForm: true } },
+          medicine: { select: { name: true, unit: true, concentration: true, dosageForm: true, sellPrice: true } },
         },
       },
     },
