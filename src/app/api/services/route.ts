@@ -9,15 +9,16 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const search = searchParams.get("search") ?? "";
   const category = searchParams.get("category") ?? "";
+  const includeInactive = searchParams.get("includeInactive") === "true";
 
   const services = await db.service.findMany({
     where: {
-      isActive: true,
+      ...(includeInactive ? {} : { isActive: true }),
       ...(search ? { name: { contains: search, mode: "insensitive" } } : {}),
       ...(category ? { category } : {}),
     },
     orderBy: { name: "asc" },
-    take: 50,
+    take: 200,
   });
 
   return NextResponse.json(services);
