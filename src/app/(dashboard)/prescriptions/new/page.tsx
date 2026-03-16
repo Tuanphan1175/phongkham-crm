@@ -365,12 +365,12 @@ export default function NewPrescriptionPage() {
           >
             {saving ? "Đang lưu..." : "💊 Lưu đơn thuốc"}
           </button>
-          <a
+          <Link
             href="/prescriptions"
             className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
           >
             Hủy
-          </a>
+          </Link>
         </div>
       </form>
     </div>
