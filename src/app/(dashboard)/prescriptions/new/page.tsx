@@ -115,31 +115,48 @@ export default function NewPrescriptionPage() {
     if (invalidItems.length > 0) { setError("Vui lòng điền đầy đủ thông tin thuốc"); return; }
 
     setSaving(true);
-    const res = await fetch("/api/prescriptions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        patientId: selectedPatient.id,
-        doctorId,
-        diagnosis,
-        notes,
-        items: items.map(it => ({
-          medicineId: it.medicineId,
-          quantity: Number(it.quantity),
-          dosage: it.dosage,
-          frequency: it.frequency,
-          duration: it.duration,
-          instructions: it.instructions || undefined,
-        })),
-      }),
-    });
+    try {
+      const res = await fetch("/api/prescriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patientId: selectedPatient.id,
+          doctorId,
+          diagnosis,
+          notes,
+          items: items.map(it => ({
+            medicineId: it.medicineId,
+            quantity: Number(it.quantity),
+            dosage: it.dosage,
+            frequency: it.frequency,
+            duration: it.duration,
+            instructions: it.instructions || undefined,
+          })),
+        }),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      router.push(`/prescriptions/${data.id}`);
-    } else {
-      const err = await res.json().catch(() => ({}));
-      setError(err.error?.message ?? "Không thể tạo đơn thuốc");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.id) {
+          router.push(`/prescriptions/${data.id}`);
+        } else {
+          setError("Phản hồi từ máy chủ không hợp lệ.");
+          setSaving(false);
+        }
+      } else {
+        const err = await res.json().catch(() => ({}));
+        let errMsg = "Không thể tạo đơn thuốc.";
+        if (err?.error) {
+          if (typeof err.error === 'string') errMsg = err.error;
+          else if (err.error.message) errMsg = err.error.message;
+          else errMsg = "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin thuốc.";
+        }
+        setError(errMsg);
+        setSaving(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Trình duyệt gặp lỗi khi xử lý hoặc rớt mạng. Vui lòng thử lại.");
       setSaving(false);
     }
   }
