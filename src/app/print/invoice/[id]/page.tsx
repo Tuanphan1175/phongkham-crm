@@ -51,7 +51,7 @@ export default async function PrintInvoicePage({ params }: { params: Promise<{ i
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "12px" }}>
         <div>
           <h1 style={{ fontSize: "17px", fontWeight: "bold", textTransform: "uppercase" }}>
-            Phòng Khám Bác Sĩ Chính Mình
+            Phòng Khám<br />BÁC SĨ CHÍNH MÌNH
           </h1>
           <p style={{ fontSize: "11px", marginTop: "2px" }}>Địa chỉ: _________________________</p>
           <p style={{ fontSize: "11px" }}>Điện thoại: _________________________</p>

@@ -205,7 +205,7 @@ export default function MedicalRecordsPage() {
                         + Bệnh án mới
                       </Link>
                       <Link
-                        href={`/prescriptions/new?patientId=${rec.patient.id}`}
+                        href={`/prescriptions/new?patientId=${rec.patient.id}${rec.diagnosis ? `&diagnosis=${encodeURIComponent(rec.diagnosis)}` : ""}`}
                         className="text-xs px-3 py-1.5 bg-violet-50 text-violet-700 rounded-lg hover:bg-violet-100"
                       >
                         💊 Kê đơn

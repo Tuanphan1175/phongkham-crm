@@ -43,7 +43,10 @@ export default function LoginPage() {
               />
             </svg>
           </div>
-          <p className="text-white font-semibold">Phòng Khám Bác Sĩ Chính Mình</p>
+          <div className="flex flex-col">
+            <p className="text-white font-semibold">Phòng Khám</p>
+            <p className="text-white font-semibold text-lg uppercase tracking-wide">BÁC SĨ CHÍNH MÌNH</p>
+          </div>
         </div>
         <div>
           <h2 className="text-3xl font-bold text-white leading-snug mb-3">
@@ -78,7 +81,10 @@ export default function LoginPage() {
                 />
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Phòng Khám Bác Sĩ Chính Mình</h1>
+            <div className="flex flex-col items-center">
+              <span className="text-lg font-bold text-slate-900 leading-tight">Phòng Khám</span>
+              <span className="text-xl font-bold text-slate-900 uppercase">BÁC SĨ CHÍNH MÌNH</span>
+            </div>
           </div>
 
           <div className="mb-8">

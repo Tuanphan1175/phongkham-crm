@@ -23,6 +23,7 @@ export default function NewPrescriptionPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prePatientId = searchParams.get("patientId") ?? "";
+  const preDiagnosis = searchParams.get("diagnosis") ?? "";
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -35,7 +36,7 @@ export default function NewPrescriptionPage() {
   const [filteredMedicines, setFilteredMedicines] = useState<Medicine[]>([]);
 
   const [doctorId, setDoctorId] = useState("");
-  const [diagnosis, setDiagnosis] = useState("");
+  const [diagnosis, setDiagnosis] = useState(preDiagnosis);
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<PrescriptionItem[]>([
     { medicineId: "", medicineName: "", unit: "", quantity: 1, dosage: "", frequency: "", duration: "", instructions: "" }

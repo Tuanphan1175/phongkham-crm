@@ -29,7 +29,7 @@ export default async function PrintPrescriptionPage({ params }: { params: Promis
       {/* Clinic header */}
       <div style={{ textAlign: "center", borderBottom: "2px solid #000", paddingBottom: "10px", marginBottom: "12px" }}>
         <h1 style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>
-          Phòng Khám Bác Sĩ Chính Mình
+          Phòng Khám<br />BÁC SĨ CHÍNH MÌNH
         </h1>
         <p style={{ fontSize: "12px", marginTop: "2px" }}>
           Địa chỉ: _________________________ | ĐT: _________________________

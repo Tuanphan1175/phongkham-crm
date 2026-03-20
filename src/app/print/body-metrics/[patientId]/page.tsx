@@ -56,7 +56,7 @@ export default async function PrintBodyMetricsPage({ params }: { params: Promise
       {/* Clinic header */}
       <div style={{ textAlign: "center", borderBottom: "2px solid #000", paddingBottom: "8px", marginBottom: "10px" }}>
         <h1 style={{ fontSize: "17px", fontWeight: "bold", textTransform: "uppercase" }}>
-          Phòng Khám Bác Sĩ Chính Mình
+          Phòng Khám<br />BÁC SĨ CHÍNH MÌNH
         </h1>
         <p style={{ fontSize: "11px" }}>Địa chỉ: _________________________ | ĐT: _________________________</p>
       </div>

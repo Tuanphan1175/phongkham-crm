@@ -81,6 +81,7 @@ async function main() {
     { code: "DV004", name: "Siêu âm ổ bụng", category: "Chẩn đoán hình ảnh", price: 300000 },
     { code: "DV005", name: "Tư vấn dinh dưỡng", category: "Tư vấn", price: 100000 },
     { code: "DV006", name: "Đo điện tim", category: "Chẩn đoán", price: 120000 },
+    { code: "DV007", name: "Thanh lọc đại tràng", category: "Thủ thuật", price: 500000 },
   ];
 
   for (const svc of services) {

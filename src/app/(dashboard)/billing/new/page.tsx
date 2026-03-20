@@ -201,7 +201,7 @@ export default function NewBillingPage() {
           {services.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4 pb-4 border-b border-gray-100">
               <p className="w-full text-xs text-gray-400 mb-1">Chọn nhanh dịch vụ:</p>
-              {services.slice(0, 6).map(svc => (
+              {services.slice(0, 10).map(svc => (
                 <button key={svc.id} type="button"
                   onClick={() => {
                     const emptyIdx = items.findIndex(it => !it.description.trim());
