@@ -168,8 +168,8 @@ export default function Sidebar({ userRole }: SidebarProps) {
             </svg>
           </div>
           <div>
-            <p className="font-semibold text-sm text-white leading-tight">Phòng Khám Bác Sĩ</p>
-            <p className="text-xs text-teal-400 font-medium">Chính Mình</p>
+            <p className="font-semibold text-sm text-white leading-tight">Phòng Khám</p>
+            <p className="text-xs text-teal-400 font-medium">Bác Sĩ Chính Mình</p>
           </div>
         </div>
       </div>
