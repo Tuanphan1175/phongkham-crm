@@ -7,6 +7,7 @@ function formatCurrency(n: number) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 }
 import { DispenseButton } from "./DispenseButton";
+import { ReturnMedicineButton } from "./ReturnMedicineButton";
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "bg-yellow-100 text-yellow-700 border border-yellow-200",
@@ -69,8 +70,13 @@ export default async function PrescriptionDetailPage({
           <span className={`text-sm px-3 py-1.5 rounded-full font-medium ${STATUS_COLORS[prescription.status]}`}>
             {STATUS_LABELS[prescription.status]}
           </span>
-          {prescription.status === "PENDING" && (
-            <DispenseButton id={prescription.id} />
+          {prescription.status !== "CANCELLED" && (
+            <div className="flex items-center gap-2">
+              <ReturnMedicineButton id={prescription.id} />
+              {prescription.status === "PENDING" && (
+                <DispenseButton id={prescription.id} />
+              )}
+            </div>
           )}
         </div>
       </div>

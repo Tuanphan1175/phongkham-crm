@@ -40,9 +40,19 @@ export default async function PrintBodyMetricsPage({ params }: { params: Promise
   });
   if (!patient) notFound();
 
-  const metrics = await db.bodyMetric.findMany({
+  const rawMetrics = await db.bodyMetric.findMany({
     where: { patientId },
     orderBy: { recordedAt: "asc" },
+  });
+
+  let currentHeight: number | null = null;
+  const metrics = rawMetrics.map(m => {
+    const mCopy = { ...m };
+    if (mCopy.height) currentHeight = mCopy.height;
+    if (mCopy.weight && !mCopy.bmi && currentHeight) {
+      mCopy.bmi = parseFloat((mCopy.weight / ((currentHeight / 100) ** 2)).toFixed(1));
+    }
+    return mCopy;
   });
 
   const age = patient.dateOfBirth
@@ -108,7 +118,7 @@ export default async function PrintBodyMetricsPage({ params }: { params: Promise
                 <th style={{ textAlign: "center", background: "#e6f3f3" }}>Tham chiếu</th>
                 {metrics.map((m, i) => (
                   <th key={m.id} style={{ textAlign: "center", background: i === 0 ? "#d4edda" : "#e6f3f3" }}>
-                    <div style={{ fontWeight: "bold" }}>{i === 0 ? "ĐẦU VÀO" : `LẦN ${i + 1}`}</div>
+                    <div style={{ fontWeight: "bold" }}>LẦN {i + 1}</div>
                     <div style={{ fontWeight: "normal", fontSize: "10px" }}>{fmtDate(m.recordedAt)}</div>
                   </th>
                 ))}

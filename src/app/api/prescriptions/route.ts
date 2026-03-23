@@ -63,43 +63,51 @@ export async function POST(req: NextRequest) {
 
   const { patientId, doctorId, diagnosis, notes, items } = parsed.data;
 
-  // Create prescription + deduct stock in a transaction
-  const prescription = await db.$transaction(async (tx) => {
-    const px = await tx.prescription.create({
-      data: {
-        patientId,
-        doctorId,
-        diagnosis,
-        notes,
-        status: "DISPENSED",
-        items: { create: items },
-      },
-      include: {
-        items: { include: { medicine: true } },
-        patient: true,
-        doctor: true,
-      },
-    });
-
-    // Deduct stock for each medicine
-    for (const item of items) {
-      await tx.medicine.update({
-        where: { id: item.medicineId },
-        data: { stockQty: { decrement: item.quantity } },
-      });
-      await tx.stockMovement.create({
+  try {
+    // Create prescription + deduct stock in a transaction
+    const prescription = await db.$transaction(async (tx) => {
+      const px = await tx.prescription.create({
         data: {
-          medicineId: item.medicineId,
-          type: "OUT",
-          quantity: -item.quantity,
-          reference: px.id,
-          notes: `Đơn thuốc BN ${patientId}`,
+          patientId,
+          doctorId,
+          diagnosis,
+          notes,
+          status: "PENDING",
+          items: { create: items },
+        },
+        include: {
+          items: { include: { medicine: true } },
+          patient: true,
+          doctor: true,
         },
       });
-    }
 
-    return px;
-  });
+      // Deduct stock for each medicine
+      for (const item of items) {
+        await tx.medicine.update({
+          where: { id: item.medicineId },
+          data: { stockQty: { decrement: item.quantity } },
+        });
+        await tx.stockMovement.create({
+          data: {
+            medicineId: item.medicineId,
+            type: "OUT",
+            quantity: -item.quantity,
+            reference: px.id,
+            notes: `Đơn thuốc BN ${patientId}`,
+          },
+        });
+      }
 
-  return NextResponse.json(prescription, { status: 201 });
+      return px;
+    });
+
+    return NextResponse.json(prescription, { status: 201 });
+  } catch (err: unknown) {
+    console.error("Prescription creation error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

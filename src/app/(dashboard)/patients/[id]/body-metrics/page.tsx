@@ -88,12 +88,15 @@ export default function BodyMetricsPage() {
   // Auto-calc BMI when weight/height changes
   useEffect(() => {
     const w = parseFloat(form.weight);
-    const h = parseFloat(form.height);
+    const knownHeight = metrics.find(m => m.height)?.height;
+    const h = parseFloat(form.height) || knownHeight || 0;
     if (w > 0 && h > 0) {
       const bmi = (w / ((h / 100) ** 2)).toFixed(1);
       setForm(f => ({ ...f, bmi }));
+    } else {
+      setForm(f => ({ ...f, bmi: "" }));
     }
-  }, [form.weight, form.height]);
+  }, [form.weight, form.height, metrics]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,7 +119,23 @@ export default function BodyMetricsPage() {
     }
   }
 
-  const latest = metrics[0];
+  // Pre-process metrics: sort ascending, fill missing bmi
+  const tableMetrics = [...metrics].reverse().map(m => ({ ...m }));
+  let currentHeight: number | null = null;
+  for (const m of tableMetrics) {
+    if (m.height) currentHeight = m.height;
+    if (m.weight && !m.bmi && currentHeight) {
+      m.bmi = parseFloat((m.weight / ((currentHeight / 100) ** 2)).toFixed(1));
+    }
+  }
+
+  const latest = metrics[0] ? { ...metrics[0] } : null;
+  if (latest && !latest.bmi && latest.weight) {
+    const kh = metrics.find(x => x.height)?.height;
+    if (kh) {
+      latest.bmi = parseFloat((latest.weight / ((kh / 100) ** 2)).toFixed(1));
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-full">
@@ -132,7 +151,13 @@ export default function BodyMetricsPage() {
           )}
         </div>
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => {
+            if (!showForm) {
+              const knownHeight = metrics.find(m => m.height)?.height;
+              setForm({ ...EMPTY_FORM, height: knownHeight ? knownHeight.toString() : "" });
+            }
+            setShowForm(!showForm);
+          }}
           className="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700"
         >
           {showForm ? "Huỷ" : "+ Nhập chỉ số mới"}
@@ -236,9 +261,9 @@ export default function BodyMetricsPage() {
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 w-32">
                     Tham chiếu (REF)
                   </th>
-                  {metrics.map((m, i) => (
+                  {tableMetrics.map((m, i) => (
                     <th key={m.id} className="text-center px-4 py-3 text-xs font-semibold text-gray-700 min-w-28">
-                      <div>{i === 0 ? "BẮT ĐẦU" : `LẦN ${i + 1}`}</div>
+                      <div>LẦN {i + 1}</div>
                       <div className="text-gray-400 font-normal">{formatDate(m.recordedAt)}</div>
                     </th>
                   ))}
@@ -251,7 +276,7 @@ export default function BodyMetricsPage() {
                     Chiều cao
                   </td>
                   <td className="px-4 py-2.5 text-gray-400 text-xs"></td>
-                  {metrics.map((m) => (
+                  {tableMetrics.map((m) => (
                     <td key={m.id} className="px-4 py-2.5 text-center text-gray-900">
                       {m.height ? `${m.height} cm` : "—"}
                     </td>
@@ -265,10 +290,10 @@ export default function BodyMetricsPage() {
                     <td className="px-4 py-2.5 text-gray-400 text-xs leading-tight">
                       {metric.ref}
                     </td>
-                    {metrics.map((m, idx) => {
+                    {tableMetrics.map((m, mIdx) => {
                       const val = (m as unknown as Record<string, unknown>)[metric.key];
-                      const prevVal = idx < metrics.length - 1
-                        ? (metrics[idx + 1] as unknown as Record<string, unknown>)[metric.key]
+                      const prevVal = mIdx > 0
+                        ? (tableMetrics[mIdx - 1] as unknown as Record<string, unknown>)[metric.key]
                         : null;
                       const numVal = typeof val === "number" ? val : null;
                       const numPrev = typeof prevVal === "number" ? prevVal : null;
@@ -286,7 +311,7 @@ export default function BodyMetricsPage() {
                               ? (Number.isInteger(val) ? val : val.toFixed(1))
                               : "—"}
                           </div>
-                          {diff !== null && idx > 0 && (
+                          {diff !== null && mIdx > 0 && diff !== 0 && (
                             <div className={`text-[10px] font-medium ${isUp ? "text-red-500" : isDown ? "text-green-600" : "text-gray-400"}`}>
                               {isUp ? "▲" : "▼"} {Math.abs(diff).toFixed(1)}
                             </div>
@@ -302,7 +327,7 @@ export default function BodyMetricsPage() {
                     Ghi chú
                   </td>
                   <td className="px-4 py-2.5"></td>
-                  {metrics.map((m) => (
+                  {tableMetrics.map((m) => (
                     <td key={m.id} className="px-4 py-2.5 text-center text-xs text-gray-500 italic">
                       {m.notes ?? ""}
                     </td>
