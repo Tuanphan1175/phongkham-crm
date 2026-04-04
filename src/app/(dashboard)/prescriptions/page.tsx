@@ -2,11 +2,13 @@ import { db } from "@/lib/db";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 
-async function getPrescriptions(page: number) {
+async function getPrescriptions(page: number, patientId?: string) {
   const limit = 20;
   const skip = (page - 1) * limit;
+  const where = patientId ? { patientId } : {};
   const [prescriptions, total] = await Promise.all([
     db.prescription.findMany({
+      where,
       include: {
         patient: { select: { fullName: true, code: true } },
         doctor: { select: { name: true } },
@@ -16,7 +18,7 @@ async function getPrescriptions(page: number) {
       skip,
       take: limit,
     }),
-    db.prescription.count(),
+    db.prescription.count({ where }),
   ]);
   return { prescriptions, total };
 }
@@ -35,11 +37,11 @@ const STATUS_LABELS: Record<string, string> = {
 export default async function PrescriptionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; patientId?: string }>;
 }) {
-  const { page: pageParam } = await searchParams;
+  const { page: pageParam, patientId } = await searchParams;
   const page = parseInt(pageParam ?? "1");
-  const { prescriptions, total } = await getPrescriptions(page);
+  const { prescriptions, total } = await getPrescriptions(page, patientId);
 
   return (
     <div className="space-y-4">
