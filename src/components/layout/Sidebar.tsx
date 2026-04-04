@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -150,6 +151,14 @@ interface SidebarProps {
 
 export default function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
+  
+  useEffect(() => {
+    // Close mobile menu on route change
+    const checkbox = document.getElementById('mobile-menu') as HTMLInputElement | null;
+    if (checkbox) {
+      checkbox.checked = false;
+    }
+  }, [pathname]);
 
   const filteredItems = navItems.filter(
     (item) => !item.roles || item.roles.includes(userRole)
