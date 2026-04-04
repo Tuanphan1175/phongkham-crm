@@ -42,7 +42,6 @@ export default function NewPrescriptionPage() {
   const [items, setItems] = useState<PrescriptionItem[]>([
     { medicineId: "", medicineName: "", unit: "", quantity: 1, dosage: "", frequency: "", duration: "", instructions: "" }
   ]);
-  const [copyingFrom, setCopyingFrom] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -66,11 +65,11 @@ export default function NewPrescriptionPage() {
     }
 
     if (copyFromId) {
-      setCopyingFrom(true);
       fetch(`/api/prescriptions/${copyFromId}`)
         .then(r => r.json())
         .then(data => {
           if (data && data.items) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             setItems(data.items.map((it: any) => ({
               medicineId: it.medicineId,
               medicineName: it.medicine.name || "",
@@ -84,7 +83,7 @@ export default function NewPrescriptionPage() {
             if (data.diagnosis && !preDiagnosis) setDiagnosis(data.diagnosis);
           }
         })
-        .finally(() => setCopyingFrom(false));
+        .catch(() => {});
     }
   }, [prePatientId, copyFromId, preDiagnosis]);
 
