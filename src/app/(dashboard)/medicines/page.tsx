@@ -154,7 +154,8 @@ export default function MedicinesPage() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="text-left text-xs font-medium text-gray-500 px-4 py-3">Mã / Tên thuốc</th>
@@ -256,6 +257,7 @@ export default function MedicinesPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Add Medicine Modal */}

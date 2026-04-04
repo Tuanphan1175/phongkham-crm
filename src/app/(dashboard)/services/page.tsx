@@ -205,7 +205,8 @@ export default function ServicesPage() {
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center text-gray-400 text-sm">Chưa có dịch vụ nào</div>
         ) : (
-          <table className="w-full">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Tên dịch vụ</th>
@@ -302,6 +303,7 @@ export default function ServicesPage() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

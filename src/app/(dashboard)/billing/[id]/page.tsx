@@ -164,7 +164,8 @@ export default function BillingDetailPage() {
         <div className="px-5 py-4 border-b border-gray-100">
           <h2 className="font-semibold text-gray-900">Dịch vụ ({invoice.items.length})</h2>
         </div>
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left px-5 py-2.5 text-xs font-medium text-gray-500">Tên dịch vụ</th>
@@ -184,6 +185,7 @@ export default function BillingDetailPage() {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* Totals */}
         <div className="border-t border-gray-100 px-5 py-4 space-y-2">

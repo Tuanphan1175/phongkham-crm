@@ -73,7 +73,8 @@ export default async function PatientsPage({
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">Mã BN</th>
@@ -121,6 +122,7 @@ export default async function PatientsPage({
             )}
           </tbody>
         </table>
+        </div>
 
         {/* Pagination */}
         {pages > 1 && (

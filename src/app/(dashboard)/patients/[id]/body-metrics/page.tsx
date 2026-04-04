@@ -273,7 +273,7 @@ export default function BodyMetricsPage() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="bg-teal-50">
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-600 w-44 sticky left-0 bg-teal-50">

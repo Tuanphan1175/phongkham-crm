@@ -85,7 +85,7 @@ export default function HealthMetricsSection({ enrollmentId, metrics, baselineMe
 
       {/* Metrics table */}
       <div className="overflow-x-auto mb-4">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[600px] text-sm">
           <thead>
             <tr className="border-b border-gray-100">
               <th className="text-left pb-2 text-xs text-gray-400 font-medium">Chỉ số</th>
