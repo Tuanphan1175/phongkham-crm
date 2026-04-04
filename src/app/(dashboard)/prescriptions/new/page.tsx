@@ -24,6 +24,7 @@ export default function NewPrescriptionPage() {
   const searchParams = useSearchParams();
   const prePatientId = searchParams.get("patientId") ?? "";
   const preDiagnosis = searchParams.get("diagnosis") ?? "";
+  const copyFromId = searchParams.get("copyFrom");
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
@@ -41,6 +42,7 @@ export default function NewPrescriptionPage() {
   const [items, setItems] = useState<PrescriptionItem[]>([
     { medicineId: "", medicineName: "", unit: "", quantity: 1, dosage: "", frequency: "", duration: "", instructions: "" }
   ]);
+  const [copyingFrom, setCopyingFrom] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -62,7 +64,29 @@ export default function NewPrescriptionPage() {
         .then(setSelectedPatient)
         .catch(() => {});
     }
-  }, [prePatientId]);
+
+    if (copyFromId) {
+      setCopyingFrom(true);
+      fetch(`/api/prescriptions/${copyFromId}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.items) {
+            setItems(data.items.map((it: any) => ({
+              medicineId: it.medicineId,
+              medicineName: it.medicine.name || "",
+              unit: it.medicine.unit || "",
+              quantity: it.quantity,
+              dosage: it.dosage || "",
+              frequency: it.frequency || "",
+              duration: it.duration || "",
+              instructions: it.instructions || "",
+            })));
+            if (data.diagnosis && !preDiagnosis) setDiagnosis(data.diagnosis);
+          }
+        })
+        .finally(() => setCopyingFrom(false));
+    }
+  }, [prePatientId, copyFromId, preDiagnosis]);
 
   useEffect(() => {
     if (patientSearch.length < 2) { setPatients([]); return; }

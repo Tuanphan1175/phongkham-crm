@@ -29,13 +29,14 @@ interface Patient {
   fullName: string;
   code: string;
   gender: string | null;
+  dateOfBirth: string | null;
 }
 
 const METRICS = [
   { key: "weight",       label: "Cân nặng",          unit: "kg",  ref: "" },
   { key: "bmi",          label: "BMI",                unit: "",    ref: "18–22.9" },
-  { key: "bodyFatPct",   label: "Mỡ cơ thể",         unit: "%",   ref: "Nữ: 18–28% | Nam: 10–20%" },
   { key: "muscleMass",   label: "Khối cơ",            unit: "kg",  ref: "" },
+  { key: "bodyFatPct",   label: "Mỡ cơ thể",         unit: "%",   ref: "Nữ: 18–28% | Nam: 10–20%" },
   { key: "bodyShape",    label: "Vóc dáng cơ thể",   unit: "",    ref: "1–3: Béo | 4–6: TB | 7–9: Gầy" },
   { key: "boneMass",     label: "Khối xương",         unit: "kg",  ref: "Nữ: 1.8–2.5 | Nam: 2.5–3.2" },
   { key: "visceralFat",  label: "Mỡ nội tạng",       unit: "",    ref: "Nam <5 | Nữ <6" },
@@ -137,6 +138,14 @@ export default function BodyMetricsPage() {
     }
   }
 
+  const dobTime = patient?.dateOfBirth ? new Date(patient.dateOfBirth).getTime() : NaN;
+  const age = !isNaN(dobTime) 
+    ? Math.floor((Date.now() - dobTime) / (365.25 * 24 * 3600 * 1000))
+    : null;
+  const genderMap: Record<string, string> = { "MALE": "Nam", "FEMALE": "Nữ", "OTHER": "Khác" };
+  const genderLabel = patient?.gender ? genderMap[patient.gender] : "—";
+  const knownHeight = form.height || metrics.find(m => m.height)?.height;
+
   return (
     <div className="space-y-6 max-w-full">
       {/* Header */}
@@ -167,7 +176,19 @@ export default function BodyMetricsPage() {
       {/* Input form */}
       {showForm && (
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">Nhập chỉ số mới</h2>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-3">
+            <h2 className="font-semibold text-gray-900">Nhập chỉ số mới</h2>
+            <div className="bg-teal-50 border border-teal-100 rounded-lg px-4 py-2 flex items-center gap-4">
+              <span className="text-sm font-medium text-teal-800">Thông số nhập máy đo:</span>
+              <div className="flex gap-3 text-sm font-semibold text-teal-900">
+                <span>{age !== null ? `${age} tuổi` : "— tuổi"}</span>
+                <span className="text-teal-200">|</span>
+                <span>{knownHeight ? `${knownHeight} cm` : "— cm"}</span>
+                <span className="text-teal-200">|</span>
+                <span>{genderLabel}</span>
+              </div>
+            </div>
+          </div>
           {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">

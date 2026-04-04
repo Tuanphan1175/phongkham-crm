@@ -144,6 +144,37 @@ export default async function PatientDetailPage({
             ))}
           </SectionCard>
 
+          {/* Prescriptions */}
+          <SectionCard
+            title="Đơn thuốc gần đây"
+            linkHref={`/prescriptions?patientId=${patient.id}`}
+            empty={patient.prescriptions.length === 0}
+            emptyText="Chưa có đơn thuốc"
+          >
+            {patient.prescriptions.map((px) => (
+              <div key={px.id} className="py-3 border-b border-gray-50 last:border-0">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1">
+                    <Link href={`/prescriptions/${px.id}`} className="text-sm font-medium text-teal-600 hover:underline">
+                      {formatDate(px.issuedAt)}
+                    </Link>
+                    <p className="text-xs text-gray-500 mt-0.5">BS: {px.doctor.name}</p>
+                    {px.diagnosis && <p className="text-xs text-gray-600 mt-0.5">CĐ: {px.diagnosis}</p>}
+                    <p className="text-xs text-gray-500 mt-0.5" title={px.items.map(i => i.medicine.name).join(", ")}>
+                      {px.items.length} thuốc: {px.items.map(i => i.medicine.name).slice(0, 2).join(", ")}{px.items.length > 2 ? ", ..." : ""}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/prescriptions/new?patientId=${patient.id}&copyFrom=${px.id}`}
+                    className="text-[11px] px-2 py-1.5 bg-teal-50 text-teal-700 rounded-lg hover:bg-teal-100 font-medium whitespace-nowrap shrink-0 border border-teal-100"
+                  >
+                    Sao chép đơn
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </SectionCard>
+
           {/* Program enrollments */}
           {patient.programEnrollments.length > 0 && (
             <SectionCard
